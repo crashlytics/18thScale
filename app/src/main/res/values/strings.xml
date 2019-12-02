@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">18th Scale</string>
+    <string name="title_activity_face_detection2">FaceDetectionActivity2</string>
 </resources>
