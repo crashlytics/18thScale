@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.firebase.hackweek.tank18thscale.bluetooth.model.DeviceInfo
 
 class BluetoothDeviceList {
-    private val devices = mutableListOf<DeviceInfo>()
+    private val devices = mutableSetOf<DeviceInfo>()
 
     private val devicesLiveData = MutableLiveData<List<DeviceInfo>>()
 
@@ -14,7 +14,7 @@ class BluetoothDeviceList {
 
     fun addDevice(device : DeviceInfo) {
         devices.add(device)
-        devicesLiveData.postValue(devices)
+        devicesLiveData.postValue(devices.toList().sortedBy { it.name })
     }
 
     // TODO: Remove devices too
