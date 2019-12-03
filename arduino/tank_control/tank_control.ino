@@ -86,8 +86,8 @@ void moveServoDown(int amount) {
 }
 
 void handleSerial(char val) {
-  int leftspeed = 255; //255 is maximum speed
-  int rightspeed = 240;
+  int leftspeed = 255;   // 255 is maximum speed
+  int rightspeed = 240;  // Adjust for skew 
   switch(val) // Perform an action depending on the command
   {
     case 'w'://Move Forward
