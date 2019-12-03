@@ -1,6 +1,5 @@
 package com.firebase.hackweek.tank18thscale
 
-import android.bluetooth.BluetoothAdapter
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Matrix
@@ -31,20 +30,9 @@ class MainActivity : AppCompatActivity(), LifecycleOwner {
 
     private val tankInterface : TankInterface = LoggingTankInterface()
 
-
-    private var bluetoothAdapter : BluetoothAdapter? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-
-        if (bluetoothAdapter == null) {
-            // Bluetooth is not available.
-            // FIXME
-            throw RuntimeException("Bluetooth not available!")
-        }
 
         // Add this at the end of onCreate function
 

@@ -7,13 +7,13 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.hackweek.tank18thscale.bluetooth.BluetoothDiscoveryReceiver
-import com.firebase.hackweek.tank18thscale.bluetooth.model.DeviceInfo
+import com.firebase.hackweek.tank18thscale.model.DeviceInfo
+import com.firebase.hackweek.tank18thscale.data.BluetoothDeviceList
 
 private const val REQUEST_ENABLE_BT = 1
 
@@ -34,6 +34,8 @@ class DeviceListActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.devices_list)
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+
+        // TODO: Bail out if bluetoothAdapter is null
 
         listAdapter = DeviceListAdapter()
 

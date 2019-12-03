@@ -1,8 +1,8 @@
-package com.firebase.hackweek.tank18thscale
+package com.firebase.hackweek.tank18thscale.data
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.firebase.hackweek.tank18thscale.bluetooth.model.DeviceInfo
+import com.firebase.hackweek.tank18thscale.model.DeviceInfo
 
 class BluetoothDeviceList {
     private val devices = mutableSetOf<DeviceInfo>()
