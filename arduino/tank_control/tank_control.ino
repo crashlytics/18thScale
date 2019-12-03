@@ -1,10 +1,12 @@
 #include <Servo.h>
 
-int E1 = 6; //M1 Speed Control
-int E2 = 5; //M2 Speed Control
-int M1 = 8; //M1 Direction Control
-int M2 = 7; //M2 Direction Control
+// Motors
+#define E1 6 // M1 Speed Control
+#define E2 5 // M2 Speed Control
+#define M1 8 // M1 Direction Control
+#define M2 7 // M2 Direction Control
 
+// Servo
 #define MIN_ANGLE 100
 #define MAX_ANGLE 180
 #define SERVO_PIN 13
@@ -14,9 +16,9 @@ int currentServoAngle = 100;
 
 void setup(void)
 {
-  int i;
-  for(i=5;i<=8;i++)
-  pinMode(i, OUTPUT);
+  for(int i=5;i<=8;i++) {
+    pinMode(i, OUTPUT);
+  }
   
   servo.attach(SERVO_PIN);
   servo.write(currentServoAngle);
@@ -32,7 +34,7 @@ void loop(void)
   }
 }
 
-void stop(void) //Stop
+void stop(void)
 {
   digitalWrite(E1,LOW);
   digitalWrite(E2,LOW);
@@ -85,10 +87,10 @@ void moveServoDown(int amount) {
   servo.write(currentServoAngle);
 }
 
-void handleSerial(char val) {
+void handleSerial(char command) {
   int leftspeed = 255;   // 255 is maximum speed
   int rightspeed = 240;  // Adjust for skew 
-  switch(val) // Perform an action depending on the command
+  switch(command) // Perform an action depending on the command
   {
     case 'w'://Move Forward
     case 'W':
