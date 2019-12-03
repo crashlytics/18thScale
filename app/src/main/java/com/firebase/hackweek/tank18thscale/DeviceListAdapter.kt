@@ -8,7 +8,11 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.firebase.hackweek.tank18thscale.model.DeviceInfo
 
-class DeviceListAdapter : RecyclerView.Adapter<DeviceListAdapter.DeviceInfoViewHolder>() {
+class DeviceListAdapter(private val deviceClickListener: DeviceClickListener) : RecyclerView.Adapter<DeviceListAdapter.DeviceInfoViewHolder>() {
+
+    interface DeviceClickListener {
+        fun onItemClick(deviceInfo: DeviceInfo)
+    }
 
     private var devices = mutableListOf<DeviceInfo>()
 
@@ -25,7 +29,7 @@ class DeviceListAdapter : RecyclerView.Adapter<DeviceListAdapter.DeviceInfoViewH
     }
 
     override fun onBindViewHolder(holder: DeviceInfoViewHolder, position: Int) {
-        holder.bind(devices[position])
+        holder.bind(devices[position], deviceClickListener)
     }
 
     fun setDevices(newDevices: List<DeviceInfo>) {
@@ -42,9 +46,11 @@ class DeviceListAdapter : RecyclerView.Adapter<DeviceListAdapter.DeviceInfoViewH
         private val deviceNameView: TextView = itemView.findViewById(R.id.device_name)
         private val deviceAddressView: TextView = itemView.findViewById(R.id.device_address)
 
-        fun bind(deviceInfo: DeviceInfo) {
+        fun bind(deviceInfo: DeviceInfo, deviceClickListener: DeviceClickListener) {
             deviceNameView.text = deviceInfo.name
             deviceAddressView.text = deviceInfo.address
+
+            itemView.setOnClickListener { deviceClickListener.onItemClick(deviceInfo) }
         }
     }
 

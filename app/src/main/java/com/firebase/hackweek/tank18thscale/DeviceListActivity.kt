@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -17,7 +18,7 @@ import com.firebase.hackweek.tank18thscale.data.BluetoothDeviceList
 
 private const val REQUEST_ENABLE_BT = 1
 
-class DeviceListActivity : AppCompatActivity() {
+class DeviceListActivity : AppCompatActivity(), DeviceListAdapter.DeviceClickListener {
 
     private val bluetoothDeviceList = BluetoothDeviceList()
 
@@ -25,7 +26,6 @@ class DeviceListActivity : AppCompatActivity() {
 
     private lateinit var viewModel: DevicesViewModel
     private lateinit var discoveryReceiver: BluetoothDiscoveryReceiver
-    private lateinit var listAdapter: DeviceListAdapter
     private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,7 +37,7 @@ class DeviceListActivity : AppCompatActivity() {
 
         // TODO: Bail out if bluetoothAdapter is null
 
-        listAdapter = DeviceListAdapter()
+        val listAdapter = DeviceListAdapter(this)
 
         val viewModelFactory = DevicesViewModelFactory(bluetoothDeviceList)
         viewModel = ViewModelProviders.of(this, viewModelFactory).get(DevicesViewModel::class.java)
@@ -65,7 +65,6 @@ class DeviceListActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         bluetoothAdapter?.cancelDiscovery()
-        // I think we might need to do this in the viewmodel maybe?
         unregisterReceiver(discoveryReceiver)
     }
 
@@ -84,6 +83,11 @@ class DeviceListActivity : AppCompatActivity() {
         }
     }
 
+    override fun onItemClick(deviceInfo: DeviceInfo) {
+        // TODO: Send the appropriate device address back to establish the bluetooth connection
+        Toast.makeText(this, "Selected ${deviceInfo.name}", Toast.LENGTH_SHORT).show()
+    }
+
     private fun requestBluetoothPermission() {
         val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
@@ -100,6 +104,7 @@ class DeviceListActivity : AppCompatActivity() {
             bluetoothAdapter?.cancelDiscovery()
         }
 
+        // TODO: Figure out why this isn't working.
         bluetoothAdapter?.startDiscovery()
     }
 }
