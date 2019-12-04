@@ -71,9 +71,8 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
                 // take first face and calculate and correct for it's error
                 if(results.isNotEmpty()) {
                         val faceInfo = FaceInfo(graphicOverlay, results[0])
-                        val error = faceInfo.getFaceDistanceFromCenter()
-                        val panAngle = panProcessor.update(error)
-                        val tiltAngle = tiltProcessor.update(error)
+                        val panAngle = panProcessor.update(faceInfo.getPanError())
+                        val tiltAngle = tiltProcessor.update(faceInfo.getTiltError())
                         println("tiltAngle")
                         println(tiltAngle)
                         println("panAngle")
@@ -84,20 +83,17 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
         }
 
         private class FaceInfo(overlay: GraphicOverlay, private val firebaseVisionFace: FirebaseVisionFace) : GraphicOverlay.Graphic(overlay) {
-                fun getFaceDistanceFromCenter() : Double {
-                        val faceCenterX = translateX(firebaseVisionFace.boundingBox.centerX().toFloat()).toDouble()
-                        val faceCenterY = translateY(firebaseVisionFace.boundingBox.centerY().toFloat()).toDouble()
-                        return calculateDistanceBetweenPoints(faceCenterX, faceCenterY, overlayCenterX.toDouble(), overlayCenterY.toDouble())
+                fun getPanError() : Float {
+                        val faceCenterX = translateX(firebaseVisionFace.boundingBox.centerX().toFloat())
+                        return overlayCenterX - faceCenterX
                 }
 
-                private fun calculateDistanceBetweenPoints(
-                        x1: Double,
-                        y1: Double,
-                        x2: Double,
-                        y2: Double
-                ): Double {
-                        return Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1))
+                fun getTiltError() : Float {
+                        val faceCenterY = translateY(firebaseVisionFace.boundingBox.centerY().toFloat())
+                        return overlayCenterY - faceCenterY
                 }
+
+
                 override fun draw(canvas: Canvas){}
         }
 

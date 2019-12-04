@@ -6,12 +6,12 @@ class PID(private val kP : Float = 1f, private val kI: Float = 0f, private val k
 
     private var currentTime = LocalDateTime.now()
     private var previousTime = currentTime
-    private var previousError : Double = 0.0
-    private var cP : Double = 0.0
-    private var cI : Double = 0.0
-    private var cD : Double = 0.0
+    private var previousError : Float = 0f
+    private var cP : Float = 0f
+    private var cI : Float = 0f
+    private var cD : Float = 0f
 
-    fun update(error : Double, sleep : Long = 100) : Double {
+    fun update(error : Float, sleep : Long = 100) : Float {
         //Thread.sleep(sleep)
         currentTime = LocalDateTime.now()
         val deltaTime = Duration.between(currentTime, previousTime).toMillis()
@@ -24,7 +24,7 @@ class PID(private val kP : Float = 1f, private val kI: Float = 0f, private val k
         if (deltaTime > 0 ) {
             cD = deltaError  / deltaTime
         } else {
-            cD = 0.0
+            cD = 0f
         }
 
         previousTime = currentTime
