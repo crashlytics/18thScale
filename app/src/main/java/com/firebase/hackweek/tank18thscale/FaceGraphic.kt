@@ -19,7 +19,8 @@ class FaceGraphic(
     overlay: GraphicOverlay,
     private val firebaseVisionFace: FirebaseVisionFace?,
     private val facing: Int,
-    private val overlayBitmap: Bitmap?
+    private val overlayBitmap: Bitmap?,
+    private val error: Int
 ) :
     GraphicOverlay.Graphic(overlay) {
 
@@ -51,40 +52,33 @@ class FaceGraphic(
         val x = translateX(face.boundingBox.centerX().toFloat())
         val y = translateY(face.boundingBox.centerY().toFloat())
         canvas.drawCircle(x, y - 4 * ID_Y_OFFSET, FACE_POSITION_RADIUS, facePositionPaint)
+
         canvas.drawText("id: " + face.trackingId, x + ID_X_OFFSET, y - 3 * ID_Y_OFFSET, idPaint)
+
         canvas.drawText(
             "happiness: ${String.format("%.2f", face.smilingProbability)}",
             x + ID_X_OFFSET * 3,
             y - 2 * ID_Y_OFFSET,
-            idPaint
-        )
-        if (facing == CameraSource.CAMERA_FACING_FRONT) {
-            canvas.drawText(
-                "right eye: ${String.format("%.2f", face.rightEyeOpenProbability)}",
-                x - ID_X_OFFSET,
-                y,
-                idPaint
-            )
-            canvas.drawText(
-                "left eye: ${String.format("%.2f", face.leftEyeOpenProbability)}",
-                x + ID_X_OFFSET * 6,
-                y,
-                idPaint
-            )
-        } else {
-            canvas.drawText(
-                "left eye: ${String.format("%.2f", face.leftEyeOpenProbability)}",
-                x - ID_X_OFFSET,
-                y,
-                idPaint
-            )
-            canvas.drawText(
-                "right eye: ${String.format("%.2f", face.rightEyeOpenProbability)}",
-                x + ID_X_OFFSET * 6,
-                y,
-                idPaint
-            )
-        }
+            idPaint)
+
+        canvas.drawText(
+            "right eye: ${String.format("%.2f", face.rightEyeOpenProbability)}",
+            x - ID_X_OFFSET,
+            y,
+            idPaint)
+
+        canvas.drawText(
+            "left eye: ${String.format("%.2f", face.leftEyeOpenProbability)}",
+            x + ID_X_OFFSET * 6,
+            y,
+            idPaint)
+
+        canvas.drawText(
+            "error: ${String.format("%d", error)}",
+            x + ID_X_OFFSET,
+            y - 4 * ID_Y_OFFSET,
+            idPaint)
+
 
         // Draws a bounding box around the face.
         val xOffset = scaleX(face.boundingBox.width() / 2.0f)
@@ -109,7 +103,6 @@ class FaceGraphic(
     }
 
 
-
     private fun drawLandmarkPosition(canvas: Canvas, face: FirebaseVisionFace, landmarkID: Int) {
         val landmark = face.getLandmark(landmarkID)
         landmark?.let {
@@ -122,7 +115,11 @@ class FaceGraphic(
         }
     }
 
-    private fun drawBitmapOverLandmarkPosition(canvas: Canvas, face: FirebaseVisionFace, landmarkID: Int) {
+    private fun drawBitmapOverLandmarkPosition(
+        canvas: Canvas,
+        face: FirebaseVisionFace,
+        landmarkID: Int
+    ) {
         val landmark = face.getLandmark(landmarkID) ?: return
 
         val point = landmark.position
@@ -135,8 +132,10 @@ class FaceGraphic(
             val right = (translateX(point.x) + imageEdgeSizeBasedOnFaceSize).toInt()
             val bottom = (translateY(point.y) + imageEdgeSizeBasedOnFaceSize).toInt()
 
-            canvas.drawBitmap(it, null,
-                Rect(left, top, right, bottom), null)
+            canvas.drawBitmap(
+                it, null,
+                Rect(left, top, right, bottom), null
+            )
         }
     }
 
