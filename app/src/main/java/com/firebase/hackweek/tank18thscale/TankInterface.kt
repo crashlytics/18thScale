@@ -9,6 +9,8 @@ interface TankInterface {
     fun moveBackward()
     fun turnLeft()
     fun turnRight()
+    fun tiltUp()
+    fun tiltDown()
     fun turnOnLights()
     fun turnOffLights()
     fun blinkLights()

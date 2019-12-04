@@ -25,6 +25,14 @@ class LoggingTankInterface : TankInterface {
         log("Turn right")
     }
 
+    override fun tiltUp() {
+        log("Tilt up")
+    }
+
+    override fun tiltDown() {
+        log("Tilt down")
+    }
+
     override fun turnOnLights() {
         log("Turn on lights")
     }

@@ -12,7 +12,7 @@ class PID(private val kP : Float = 1f, private val kI: Float = 0f, private val k
     private var cD : Float = 0f
 
     fun update(error : Float, sleep : Long = 100) : Float {
-        //Thread.sleep(sleep)
+       // Thread.sleep(sleep)
         currentTime = LocalDateTime.now()
         val deltaTime = Duration.between(currentTime, previousTime).toMillis()
 
@@ -32,6 +32,4 @@ class PID(private val kP : Float = 1f, private val kI: Float = 0f, private val k
 
         return (kP * cP) + (kI * cI) + (kD * cD)
     }
-
-
 }
