@@ -22,6 +22,9 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
         private val detector: FirebaseVisionFaceDetector
 
         private val overlayBitmap: Bitmap
+        // @GuardedBy("processorLock")
+        private val panProcessor: PID
+        private val tiltProcessor : PID
 
         init {
                 val options = FirebaseVisionFaceDetectorOptions.Builder()
@@ -30,14 +33,12 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
                         .enableTracking()
                         .build()
 
-//        val options = FirebaseVisionFaceDetectorOptions.Builder()
-//                .setPerformanceMode(FirebaseVisionFaceDetectorOptions.FAST)
-//                .setContourMode(FirebaseVisionFaceDetectorOptions.ALL_CONTOURS)
-//                .build()
-
                 detector = FirebaseVision.getInstance().getVisionFaceDetector(options)
 
                 overlayBitmap = BitmapFactory.decodeResource(res, R.drawable.clown_nose)
+
+                panProcessor = PID(0.09f, 0.08f, 0.002f)
+                tiltProcessor = PID(0.11f, 0.10f, 0.002f)
         }
 
         override fun stop() {
@@ -68,6 +69,14 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
                         val faceGraphic = FaceGraphic(graphicOverlay, face, cameraFacing, overlayBitmap)
                         graphicOverlay.add(faceGraphic)
                 }
+                // take first face and calculate and correct for it's error
+                val error = results[0].boundingBox.centerX() - results[0].boundingBox.centerY()
+                val panAngle = panProcessor.update(error)
+                val tiltAngle = tiltProcessor.update(error)
+                println("tiltAngle")
+                println(tiltAngle)
+                println("panAngle")
+                println(panAngle)
                 graphicOverlay.postInvalidate()
         }
 
