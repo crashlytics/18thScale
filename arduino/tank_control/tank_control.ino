@@ -69,6 +69,12 @@ void left (char a,char b)
   Serial.println("left");
 }
 
+void left (char a,char b, int ms) {
+  left(a,b);
+  delay(ms);
+  stop();  
+}
+
 void right (char a,char b)
 {
   analogWrite (E1,a);
@@ -76,6 +82,12 @@ void right (char a,char b)
   analogWrite (E2,b);
   digitalWrite(M2,HIGH);
   Serial.println("right");
+}
+
+void right (char a,char b, int ms) {
+  right(a,b);
+  delay(ms);
+  stop();
 }
 
 void moveServoUp(int amount) {
@@ -90,7 +102,7 @@ void moveServoDown(int amount) {
 
 void handleSerial(char command) {
   int leftspeed = 255;   // 255 is maximum speed
-  int rightspeed = 240;  // Adjust for skew 
+  int rightspeed = 255;  
   switch(command) // Perform an action depending on the command
   {
     case 'w'://Move Forward
@@ -109,13 +121,21 @@ void handleSerial(char command) {
     case 'D':
       right (leftspeed,rightspeed);
       break;
-    case 'r': //Tilt UP
-    case 'R':
+    case 'u': //Tilt UP
+    case 'U':
       moveServoUp(SERVO_MOVE_INCREMENT);
       break;
-    case 'f':
-    case 'F':
+    case 'j':
+    case 'J':
       moveServoDown(SERVO_MOVE_INCREMENT);
+      break;
+    case 'h':
+    case 'H':
+      left(leftspeed,rightspeed,100);
+      break;
+    case 'k':
+    case 'K':
+      right(leftspeed, rightspeed, 100);
       break;
     default:
       stop();
