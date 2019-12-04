@@ -108,6 +108,11 @@ class FaceGraphic(
         drawLandmarkPosition(canvas, face, FirebaseVisionFaceLandmark.MOUTH_RIGHT)
     }
 
+    fun getFaceCenter() : Map<String, Int>? {
+        val face = firebaseVisionFace ?: return null
+        return mapOf("x" to face.boundingBox.centerX(), "y" to face.boundingBox.centerY())
+    }
+
     private fun drawLandmarkPosition(canvas: Canvas, face: FirebaseVisionFace, landmarkID: Int) {
         val landmark = face.getLandmark(landmarkID)
         landmark?.let {
