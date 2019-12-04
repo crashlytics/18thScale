@@ -69,6 +69,7 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
                         val faceGraphic = FaceGraphic(graphicOverlay, face, cameraFacing, overlayBitmap)
                         graphicOverlay.add(faceGraphic)
                 }
+                // take first face and calculate and correct for it's error
                 val error = results[0].boundingBox.centerX() - results[0].boundingBox.centerY()
                 val panAngle = panProcessor.update(error)
                 val tiltAngle = tiltProcessor.update(error)
