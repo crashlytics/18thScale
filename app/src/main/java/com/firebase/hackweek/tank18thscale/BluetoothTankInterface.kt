@@ -24,6 +24,13 @@ class BluetoothTankInterface(private val bluetoothService: BluetoothService) : T
         sendCommand("d")
     }
 
+    override fun tiltUp() {
+        sendCommand("u")
+    }
+
+    override fun tiltDown(){
+        sendCommand("j")
+    }
     override fun turnOnLights() {
         // TODO
     }

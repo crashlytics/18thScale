@@ -29,6 +29,8 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
     // @GuardedBy("processorLock")
     private val panProcessor: PID
     private val tiltProcessor: PID
+    private val panner: Panner
+    private val tilter: Tilter
 
     init {
         val options = FirebaseVisionFaceDetectorOptions.Builder()
@@ -43,6 +45,8 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
 
         panProcessor = PID(0.09f, 0.08f, 0.002f)
         tiltProcessor = PID(0.11f, 0.10f, 0.002f)
+        panner = Panner(0f, LoggingTankInterface())
+        tilter = Tilter(0f, LoggingTankInterface())
 
     }
 
@@ -91,14 +95,16 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
                 firstFace = faceGraphic
             }
         }
-        // take first face and calculate and correct for it's error
+        // take first face and calculate and correct for its error
         if(firstFace != null) {
             val panAngle = panProcessor.update(firstFace.getPanError())
             val tiltAngle = tiltProcessor.update(firstFace.getTiltError())
-            println("tiltAngle")
-            println(tiltAngle)
-            println("panAngle")
-            println(panAngle)
+        //    println("tiltAngle")
+        //    println(tiltAngle)
+        //    println("panAngle")
+        //    println(panAngle)
+            panner.pan(panAngle)
+            tilter.tilt(tiltAngle)
         }
 
         graphicOverlay.postInvalidate()
