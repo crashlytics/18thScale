@@ -116,6 +116,20 @@ public class GraphicOverlay extends View {
         public void postInvalidate() {
             overlay.postInvalidate();
         }
+
+        /**
+         * Outputs the overlay x center according to the preview coordinate system.
+         */
+        public float getOverlayCenterX()  {
+            return overlay.getWidth()/2;
+        }
+
+        /**
+         * Outputs the overlay y center according to the preview coordinate system.
+         */
+        public float getOverlayCenterY()  {
+            return overlay.getHeight()/2;
+        }
     }
 
     public GraphicOverlay(Context context, AttributeSet attrs) {
