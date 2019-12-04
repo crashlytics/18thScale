@@ -3,6 +3,7 @@ package com.firebase.hackweek.tank18thscale
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Rect
 import android.util.Log
 import com.google.android.gms.tasks.Task
@@ -16,6 +17,8 @@ import com.firebase.hackweek.tank18thscale.common.CameraImageGraphic
 import com.firebase.hackweek.tank18thscale.common.FrameMetadata
 import com.firebase.hackweek.tank18thscale.common.GraphicOverlay
 import java.io.IOException
+
+
 
 /** Face Detector Demo.  */
 class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<FirebaseVisionFace>>() {
@@ -40,7 +43,22 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
 
         panProcessor = PID(0.09f, 0.08f, 0.002f)
         tiltProcessor = PID(0.11f, 0.10f, 0.002f)
+
     }
+
+//    private class FaceInfo(overlay: GraphicOverlay, private val firebaseVisionFace: FirebaseVisionFace) : GraphicOverlay.Graphic(overlay) {
+//        fun getPanError() : Float {
+//            val faceCenterX = translateX(firebaseVisionFace.boundingBox.centerX().toFloat())
+//            return overlayCenterX - faceCenterX
+//        }
+//
+//        fun getTiltError() : Float {
+//            val faceCenterY = translateY(firebaseVisionFace.boundingBox.centerY().toFloat())
+//            return overlayCenterY - faceCenterY
+//        }
+//        override fun draw(canvas: Canvas){}
+//    }
+
 
     override fun stop() {
         try {
@@ -63,31 +81,29 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
         graphicOverlay.clear()
         val imageGraphic = CameraImageGraphic(graphicOverlay, originalCameraImage)
         graphicOverlay.add(imageGraphic)
+        var firstFace : FaceGraphic? = null
         for (i in results.indices) {
             val face = results[i]
-
             val cameraFacing = frameMetadata.cameraFacing
-            val faceGraphic = FaceGraphic(
-                graphicOverlay,
-                face,
-                cameraFacing,
-                overlayBitmap,
-                face.boundingBox.centerX() - face.boundingBox.centerY())
+            val faceGraphic = FaceGraphic(graphicOverlay, face, cameraFacing, null)
             graphicOverlay.add(faceGraphic)
+            if (i==0) {
+                firstFace = faceGraphic
+            }
+        }
+        // take first face and calculate and correct for it's error
+        if(firstFace != null) {
+            val panAngle = panProcessor.update(firstFace.getPanError())
+            val tiltAngle = tiltProcessor.update(firstFace.getTiltError())
+            println("tiltAngle")
+            println(tiltAngle)
+            println("panAngle")
+            println(panAngle)
         }
 
-        // take the face with the lowest tracking id and compute error
-        val boundingBox: Rect? = results.minBy { it.trackingId }?.boundingBox
-
-        val error = if (boundingBox != null) (boundingBox.centerX() - boundingBox.centerY()) else 0;
-        val panAngle  = panProcessor.update(error)
-        val tiltAngle = tiltProcessor.update(error)
-        println("tiltAngle")
-        println(tiltAngle)
-        println("panAngle")
-        println(panAngle)
         graphicOverlay.postInvalidate()
     }
+
 
     override fun onFailure(e: Exception) {
         Log.e(TAG, "Face detection failed $e")

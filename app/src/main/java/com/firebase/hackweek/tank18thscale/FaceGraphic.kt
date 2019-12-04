@@ -19,14 +19,16 @@ class FaceGraphic(
     overlay: GraphicOverlay,
     private val firebaseVisionFace: FirebaseVisionFace?,
     private val facing: Int,
-    private val overlayBitmap: Bitmap?,
-    private val error: Int
-) :
-    GraphicOverlay.Graphic(overlay) {
+    private val overlayBitmap: Bitmap?)
+    : GraphicOverlay.Graphic(overlay) {
 
     /**
      * Draws the face annotations for position on the supplied canvas.
      */
+
+    private val centerPaint = Paint().apply {
+        color = Color.RED
+    }
 
     private val facePositionPaint = Paint().apply {
         color = Color.WHITE
@@ -43,6 +45,22 @@ class FaceGraphic(
         strokeWidth = BOX_STROKE_WIDTH
     }
 
+    fun getPanError() : Float {
+        if (firebaseVisionFace == null) {
+            return 0f
+        }
+        val faceCenterX = translateX(firebaseVisionFace.boundingBox.centerX().toFloat())
+        return overlayCenterX - faceCenterX
+    }
+
+    fun getTiltError() : Float {
+        if (firebaseVisionFace == null) {
+            return 0f
+        }
+        val faceCenterY = translateY(firebaseVisionFace.boundingBox.centerY().toFloat())
+        return overlayCenterY - faceCenterY
+    }
+
     override fun draw(canvas: Canvas) {
         val face = firebaseVisionFace ?: return
 
@@ -51,6 +69,10 @@ class FaceGraphic(
         // of the face's bounding box
         val x = translateX(face.boundingBox.centerX().toFloat())
         val y = translateY(face.boundingBox.centerY().toFloat())
+        // draw camera center
+        canvas.drawCircle(overlayCenterX, overlayCenterY, 30.0f, centerPaint)
+        // draw box center
+        canvas.drawCircle(x, y, 30.0f, centerPaint)
         canvas.drawCircle(x, y - 4 * ID_Y_OFFSET, FACE_POSITION_RADIUS, facePositionPaint)
 
         canvas.drawText("id: " + face.trackingId, x + ID_X_OFFSET, y - 3 * ID_Y_OFFSET, idPaint)
@@ -62,21 +84,15 @@ class FaceGraphic(
             idPaint)
 
         canvas.drawText(
-            "right eye: ${String.format("%.2f", face.rightEyeOpenProbability)}",
+            "pan error: ${String.format("%.2f", getPanError())}",
             x - ID_X_OFFSET,
             y,
             idPaint)
 
         canvas.drawText(
-            "left eye: ${String.format("%.2f", face.leftEyeOpenProbability)}",
+            "tilt error: ${String.format("%.2f", getTiltError())}",
             x + ID_X_OFFSET * 6,
             y,
-            idPaint)
-
-        canvas.drawText(
-            "error: ${String.format("%d", error)}",
-            x + ID_X_OFFSET,
-            y - 4 * ID_Y_OFFSET,
             idPaint)
 
 
