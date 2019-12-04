@@ -19,9 +19,8 @@ class FaceGraphic(
     overlay: GraphicOverlay,
     private val firebaseVisionFace: FirebaseVisionFace?,
     private val facing: Int,
-    private val overlayBitmap: Bitmap?
-) :
-    GraphicOverlay.Graphic(overlay) {
+    private val overlayBitmap: Bitmap?)
+    : GraphicOverlay.Graphic(overlay) {
 
     /**
      * Draws the face annotations for position on the supplied canvas.
@@ -46,6 +45,22 @@ class FaceGraphic(
         strokeWidth = BOX_STROKE_WIDTH
     }
 
+    fun getPanError() : Float {
+        if (firebaseVisionFace == null) {
+            return 0f
+        }
+        val faceCenterX = translateX(firebaseVisionFace.boundingBox.centerX().toFloat())
+        return overlayCenterX - faceCenterX
+    }
+
+    fun getTiltError() : Float {
+        if (firebaseVisionFace == null) {
+            return 0f
+        }
+        val faceCenterY = translateY(firebaseVisionFace.boundingBox.centerY().toFloat())
+        return overlayCenterY - faceCenterY
+    }
+
     override fun draw(canvas: Canvas) {
         val face = firebaseVisionFace ?: return
 
@@ -59,40 +74,27 @@ class FaceGraphic(
         // draw box center
         canvas.drawCircle(x, y, 30.0f, centerPaint)
         canvas.drawCircle(x, y - 4 * ID_Y_OFFSET, FACE_POSITION_RADIUS, facePositionPaint)
+
         canvas.drawText("id: " + face.trackingId, x + ID_X_OFFSET, y - 3 * ID_Y_OFFSET, idPaint)
+
         canvas.drawText(
             "happiness: ${String.format("%.2f", face.smilingProbability)}",
             x + ID_X_OFFSET * 3,
             y - 2 * ID_Y_OFFSET,
-            idPaint
-        )
-        if (facing == CameraSource.CAMERA_FACING_FRONT) {
-            canvas.drawText(
-                "right eye: ${String.format("%.2f", face.rightEyeOpenProbability)}",
-                x - ID_X_OFFSET,
-                y,
-                idPaint
-            )
-            canvas.drawText(
-                "left eye: ${String.format("%.2f", face.leftEyeOpenProbability)}",
-                x + ID_X_OFFSET * 6,
-                y,
-                idPaint
-            )
-        } else {
-            canvas.drawText(
-                "left eye: ${String.format("%.2f", face.leftEyeOpenProbability)}",
-                x - ID_X_OFFSET,
-                y,
-                idPaint
-            )
-            canvas.drawText(
-                "right eye: ${String.format("%.2f", face.rightEyeOpenProbability)}",
-                x + ID_X_OFFSET * 6,
-                y,
-                idPaint
-            )
-        }
+            idPaint)
+
+        canvas.drawText(
+            "pan error: ${String.format("%.2f", getPanError())}",
+            x - ID_X_OFFSET,
+            y,
+            idPaint)
+
+        canvas.drawText(
+            "tilt error: ${String.format("%.2f", getTiltError())}",
+            x + ID_X_OFFSET * 6,
+            y,
+            idPaint)
+
 
         // Draws a bounding box around the face.
         val xOffset = scaleX(face.boundingBox.width() / 2.0f)
@@ -117,7 +119,6 @@ class FaceGraphic(
     }
 
 
-
     private fun drawLandmarkPosition(canvas: Canvas, face: FirebaseVisionFace, landmarkID: Int) {
         val landmark = face.getLandmark(landmarkID)
         landmark?.let {
@@ -130,7 +131,11 @@ class FaceGraphic(
         }
     }
 
-    private fun drawBitmapOverLandmarkPosition(canvas: Canvas, face: FirebaseVisionFace, landmarkID: Int) {
+    private fun drawBitmapOverLandmarkPosition(
+        canvas: Canvas,
+        face: FirebaseVisionFace,
+        landmarkID: Int
+    ) {
         val landmark = face.getLandmark(landmarkID) ?: return
 
         val point = landmark.position
@@ -143,8 +148,10 @@ class FaceGraphic(
             val right = (translateX(point.x) + imageEdgeSizeBasedOnFaceSize).toInt()
             val bottom = (translateY(point.y) + imageEdgeSizeBasedOnFaceSize).toInt()
 
-            canvas.drawBitmap(it, null,
-                Rect(left, top, right, bottom), null)
+            canvas.drawBitmap(
+                it, null,
+                Rect(left, top, right, bottom), null
+            )
         }
     }
 
