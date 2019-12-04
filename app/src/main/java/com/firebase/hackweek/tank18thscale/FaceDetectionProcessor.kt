@@ -65,7 +65,7 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
                 for (i in results.indices) {
                         val face = results[i]
                         val cameraFacing = frameMetadata.cameraFacing
-                        val faceGraphic = FaceGraphic(graphicOverlay, face, cameraFacing, overlayBitmap)
+                        val faceGraphic = FaceGraphic(graphicOverlay, face, cameraFacing, null)
                         graphicOverlay.add(faceGraphic)
                 }
                 // take first face and calculate and correct for it's error

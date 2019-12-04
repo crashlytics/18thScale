@@ -27,6 +27,10 @@ class FaceGraphic(
      * Draws the face annotations for position on the supplied canvas.
      */
 
+    private val centerPaint = Paint().apply {
+        color = Color.RED
+    }
+
     private val facePositionPaint = Paint().apply {
         color = Color.WHITE
     }
@@ -50,6 +54,10 @@ class FaceGraphic(
         // of the face's bounding box
         val x = translateX(face.boundingBox.centerX().toFloat())
         val y = translateY(face.boundingBox.centerY().toFloat())
+        // draw camera center
+        canvas.drawCircle(overlayCenterX, overlayCenterY, 30.0f, centerPaint)
+        // draw box center
+        canvas.drawCircle(x, y, 30.0f, centerPaint)
         canvas.drawCircle(x, y - 4 * ID_Y_OFFSET, FACE_POSITION_RADIUS, facePositionPaint)
         canvas.drawText("id: " + face.trackingId, x + ID_X_OFFSET, y - 3 * ID_Y_OFFSET, idPaint)
         canvas.drawText(
