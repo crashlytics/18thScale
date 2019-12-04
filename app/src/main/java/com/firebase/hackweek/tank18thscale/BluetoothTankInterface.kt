@@ -1,26 +1,27 @@
 package com.firebase.hackweek.tank18thscale
 
+import android.util.Log
 import com.firebase.hackweek.tank18thscale.service.BluetoothService
 
 class BluetoothTankInterface(private val bluetoothService: BluetoothService) : TankInterface {
     override fun stop() {
-        // TODO
+        sendCommand("x")
     }
 
     override fun moveForward() {
-        sendCommand("W")
+        sendCommand("w")
     }
 
     override fun moveBackward() {
-        sendCommand("S")
+        sendCommand("s")
     }
 
     override fun turnLeft() {
-        sendCommand("A")
+        sendCommand("a")
     }
 
     override fun turnRight() {
-        sendCommand("D")
+        sendCommand("d")
     }
 
     override fun turnOnLights() {
@@ -36,6 +37,7 @@ class BluetoothTankInterface(private val bluetoothService: BluetoothService) : T
     }
 
     private fun sendCommand(command: String) {
+        Log.i("Tank18thScale", "Sending command = ${command}")
         bluetoothService.writeToConnectedDevice(command.toByteArray())
     }
 }

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.firebase.hackweek.tank18thscale.bluetooth.BluetoothDiscoveryReceiver
 import com.firebase.hackweek.tank18thscale.model.DeviceInfo
 import com.firebase.hackweek.tank18thscale.data.BluetoothDeviceList
+import com.firebase.hackweek.tank18thscale.service.BluetoothService
 
 private const val REQUEST_ENABLE_BT = 1
 
@@ -35,7 +37,7 @@ class DeviceListActivity : AppCompatActivity(), DeviceListAdapter.DeviceClickLis
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
-        // TODO: Bail out if bluetoothAdapter is null
+        // TODO: Bail out if bluetoothAdapter is null, show an empty state
 
         val listAdapter = DeviceListAdapter(this)
 
@@ -84,8 +86,11 @@ class DeviceListActivity : AppCompatActivity(), DeviceListAdapter.DeviceClickLis
     }
 
     override fun onItemClick(deviceInfo: DeviceInfo) {
-        // TODO: Send the appropriate device address back to establish the bluetooth connection
-        Toast.makeText(this, "Selected ${deviceInfo.name}", Toast.LENGTH_SHORT).show()
+        // TODO: do a loading spinner, connect the service, hand the tankinterface to the application
+        val service = BluetoothService(bluetoothAdapter!!)
+        service.connect(bluetoothAdapter!!.getRemoteDevice(deviceInfo.address))
+        val tankInterface = BluetoothTankInterface(service)
+        // Give the tankInterface to the application to manage as a singleton
     }
 
     private fun requestBluetoothPermission() {
