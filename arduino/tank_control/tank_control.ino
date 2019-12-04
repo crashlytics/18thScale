@@ -9,6 +9,7 @@
 // Servo
 #define MIN_ANGLE 100
 #define MAX_ANGLE 180
+#define SERVO_MOVE_INCREMENT 5
 #define SERVO_PIN 13
 
 Servo servo;
@@ -110,11 +111,11 @@ void handleSerial(char command) {
       break;
     case 'r': //Tilt UP
     case 'R':
-      moveServoUp(1);
+      moveServoUp(SERVO_MOVE_INCREMENT);
       break;
     case 'f':
     case 'F':
-      moveServoDown(1);
+      moveServoDown(SERVO_MOVE_INCREMENT);
       break;
     default:
       stop();
