@@ -10,6 +10,7 @@ import java.io.IOException
 // private const val DEVICE_UUID = "00001101-0000-1000-8000-00805f9b34fb"
 
 class BluetoothConnectThread(private val bluetoothAdapter: BluetoothAdapter, device: BluetoothDevice, private val connectListener: ConnectListener) : Thread() {
+
     private val connectSocket: BluetoothSocket
 
     init {
@@ -36,6 +37,7 @@ class BluetoothConnectThread(private val bluetoothAdapter: BluetoothAdapter, dev
             } catch (closeError: IOException) {
                 // TODO: log the failure
             }
+            connectListener.onConnectionFailure()
             return
         }
 
@@ -64,5 +66,6 @@ class BluetoothConnectThread(private val bluetoothAdapter: BluetoothAdapter, dev
 
     interface ConnectListener {
         fun onConnected(socket: BluetoothSocket)
+        fun onConnectionFailure()
     }
 }

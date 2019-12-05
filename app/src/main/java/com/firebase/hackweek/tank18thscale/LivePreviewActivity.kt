@@ -105,8 +105,6 @@ class LivePreviewActivity : AppCompatActivity(), OnRequestPermissionsResultCallb
 //        startCameraSource()
 //    }
 
-    private var bluetoothConnected = false
-
     private fun createCameraSource(model: String) {
         // If there's no existing cameraSource, create one.
         if (cameraSource == null) {
@@ -120,11 +118,9 @@ class LivePreviewActivity : AppCompatActivity(), OnRequestPermissionsResultCallb
 
         var faceMovementWatcher = object : FaceDetectionProcessor.FaceMovementWatcher {
             override fun onFaceMove(panError: Float, tiltError: Float, happiness : Float) {
-                if (bluetoothConnected) {
-                    panner.pan(panError)
-                    tilter.tilt(tiltError)
-                    blinker.blink(happiness)
-                }
+                panner.pan(panError)
+                tilter.tilt(tiltError)
+                blinker.blink(happiness)
             }
         }
 
@@ -171,8 +167,6 @@ class LivePreviewActivity : AppCompatActivity(), OnRequestPermissionsResultCallb
         super.onResume()
         Log.d(TAG, "onResume")
         startCameraSource()
-        // TODO Should do this on a callback when it's *actually* connected
-        Handler().postDelayed({ bluetoothConnected = true }, 5000)
     }
 
     /** Stops the camera.  */

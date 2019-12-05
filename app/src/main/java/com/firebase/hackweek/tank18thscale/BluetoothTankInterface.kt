@@ -49,6 +49,6 @@ class BluetoothTankInterface(private val bluetoothService: BluetoothService) : T
 
     private fun sendCommand(command: String) {
         Log.i("Tank18thScale", "Sending command = ${command}")
-        bluetoothService.writeToConnectedDevice(command.toByteArray())
+        bluetoothService.write(command.toByteArray())
     }
 }
