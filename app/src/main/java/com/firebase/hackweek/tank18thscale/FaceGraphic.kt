@@ -91,6 +91,7 @@ class FaceGraphic(
             idPaint)
 
 
+
         // Draws a bounding box around the face.
         val xOffset = scaleX(face.boundingBox.width() / 2.0f)
         val yOffset = scaleY(face.boundingBox.height() / 2.0f)

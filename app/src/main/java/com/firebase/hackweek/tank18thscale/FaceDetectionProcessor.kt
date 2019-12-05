@@ -29,7 +29,7 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
     private val tiltProcessor: PID
     private val panner: Panner
     private val tilter: Tilter
-    private var firstFace : FaceGraphic? = null
+    private var selectedFace : FaceGraphic? = null
     private var previousErrorSendTime = 0L
 
     init {
@@ -89,11 +89,11 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
         for (face in faces) {
             val cameraFacing = frameMetadata.cameraFacing
             val faceGraphic = FaceGraphic(
-                graphicOverlay, face, cameraFacing, null, if (face == selectedFace) Color.RED else Color.WHITE )
+                graphicOverlay, face, cameraFacing, null, if (face == selectedFace) Color.GREEN else Color.WHITE)
             graphicOverlay.add(faceGraphic)
         }
 
-        // take first face and calculate and correct for its error
+        // take the selected face and calculate and correct for its error
         // this is a non-blocking call
         val currentTime = System.currentTimeMillis()
         if (currentTime - previousErrorSendTime > 1000) {
@@ -105,11 +105,9 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
     }
 
     fun calculateErrorAndSend(){
-        if(firstFace != null) {
-//            val panAngle = panProcessor.update(firstFace!!.getPanError())
-//            val tiltAngle = tiltProcessor.update(firstFace!!.getTiltError())
-            panner.pan(firstFace!!.getPanError())
-            tilter.tilt(firstFace!!.getTiltError())
+        if(selectedFace != null) {
+            panner.pan(selectedFace!!.getPanError())
+            tilter.tilt(selectedFace!!.getTiltError())
         }
     }
 
