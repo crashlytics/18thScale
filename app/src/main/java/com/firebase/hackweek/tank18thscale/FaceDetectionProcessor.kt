@@ -3,6 +3,7 @@ package com.firebase.hackweek.tank18thscale
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.firebase.ml.vision.FirebaseVision
@@ -64,22 +65,34 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
 
     override fun onSuccess(
         originalCameraImage: Bitmap?,
-        results: List<FirebaseVisionFace>,
+        faces: List<FirebaseVisionFace>,
         frameMetadata: FrameMetadata,
         graphicOverlay: GraphicOverlay
     ) {
+        val selectedFace = faces.maxBy { it.smilingProbability }
+
+        drawImage(selectedFace, faces, graphicOverlay, frameMetadata, originalCameraImage);
+    }
+
+    private fun drawImage(
+        selectedFace: FirebaseVisionFace?,
+        faces: List<FirebaseVisionFace>,
+        graphicOverlay: GraphicOverlay,
+        frameMetadata: FrameMetadata,
+        originalCameraImage: Bitmap?
+    ) {
         graphicOverlay.clear()
+
         val imageGraphic = CameraImageGraphic(graphicOverlay, originalCameraImage)
         graphicOverlay.add(imageGraphic)
-        for (i in results.indices) {
-            val face = results[i]
+
+        for (face in faces) {
             val cameraFacing = frameMetadata.cameraFacing
-            val faceGraphic = FaceGraphic(graphicOverlay, face, cameraFacing, null)
+            val faceGraphic = FaceGraphic(
+                graphicOverlay, face, cameraFacing, null, if (face == selectedFace) Color.RED else Color.WHITE )
             graphicOverlay.add(faceGraphic)
-            if (i==0) {
-                firstFace = faceGraphic
-            }
         }
+
         // take first face and calculate and correct for its error
         // this is a non-blocking call
         val currentTime = System.currentTimeMillis()
