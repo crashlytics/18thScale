@@ -56,6 +56,10 @@ class FaceGraphic(
         return overlayCenterY - faceCenterY
     }
 
+    fun getHappiness() : Float {
+        return firebaseVisionFace!!.smilingProbability
+    }
+
     override fun draw(canvas: Canvas) {
         val face = firebaseVisionFace ?: return
 
