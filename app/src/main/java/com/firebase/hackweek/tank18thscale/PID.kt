@@ -2,7 +2,9 @@ package com.firebase.hackweek.tank18thscale
 
 import java.time.*
 
-class PID(private val kP : Float = 1f, private val kI: Float = 0f, private val kD : Float = 0f) {
+
+class PID(private val kP : Float = 1f, private val kI: Float = 0f, private val kD : Float = 0f,
+          private val descriptor: String) {
 
     private var currentTime = LocalDateTime.now()
     private var previousTime = currentTime

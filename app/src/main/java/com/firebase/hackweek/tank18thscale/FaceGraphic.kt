@@ -19,7 +19,8 @@ class FaceGraphic(
     overlay: GraphicOverlay,
     private val firebaseVisionFace: FirebaseVisionFace?,
     private val facing: Int,
-    private val overlayBitmap: Bitmap?)
+    private val overlayBitmap: Bitmap?,
+    private val bbColor: Int)
     : GraphicOverlay.Graphic(overlay) {
 
     /**
@@ -37,12 +38,6 @@ class FaceGraphic(
     private val idPaint = Paint().apply {
         color = Color.WHITE
         textSize = ID_TEXT_SIZE
-    }
-
-    private val boxPaint = Paint().apply {
-        color = Color.WHITE
-        style = Style.STROKE
-        strokeWidth = BOX_STROKE_WIDTH
     }
 
     fun getPanError() : Float {
@@ -96,6 +91,7 @@ class FaceGraphic(
             idPaint)
 
 
+
         // Draws a bounding box around the face.
         val xOffset = scaleX(face.boundingBox.width() / 2.0f)
         val yOffset = scaleY(face.boundingBox.height() / 2.0f)
@@ -103,7 +99,11 @@ class FaceGraphic(
         val top = y - yOffset
         val right = x + xOffset
         val bottom = y + yOffset
-        canvas.drawRect(left, top, right, bottom, boxPaint)
+        canvas.drawRect(left, top, right, bottom, Paint().apply {
+            color = bbColor
+            style = Style.STROKE
+            strokeWidth = BOX_STROKE_WIDTH
+        })
 
         // draw landmarks
         drawLandmarkPosition(canvas, face, FirebaseVisionFaceLandmark.MOUTH_BOTTOM)
