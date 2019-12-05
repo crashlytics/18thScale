@@ -17,7 +17,8 @@ class BluetoothDiscoveryReceiver(private val deviceList : BluetoothDeviceList) :
                 // object and its info from the Intent.
                 val device: BluetoothDevice =
                     intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
-                val deviceInfo = DeviceInfo(device.name, device.address)
+                val deviceName = device.name ?: "~"
+                val deviceInfo = DeviceInfo(deviceName, device.address)
                 if (device.bondState != BluetoothDevice.BOND_BONDED) {
                     deviceList.addDevice(deviceInfo)
                 }

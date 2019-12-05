@@ -17,10 +17,8 @@ import com.firebase.hackweek.tank18thscale.common.GraphicOverlay
 import java.io.IOException
 private const val TAG = "Tank18thScale"
 
-
-
 /** Face Detector Demo.  */
-class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<FirebaseVisionFace>>() {
+class FaceDetectionProcessor(res: Resources, private val faceMovementWatcher: FaceMovementWatcher) : VisionProcessorBase<List<FirebaseVisionFace>>() {
 
     private val detector: FirebaseVisionFaceDetector
 
@@ -30,6 +28,7 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
     private val tiltProcessor: PID
     private val panner: Panner
     private val tilter: Tilter
+
     private var previousErrorSendTime = 0L
 
     init {
@@ -47,7 +46,6 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
         tiltProcessor = PID(0.11f, 0.10f, 0.002f,  "TILT: ")
         panner = Panner(0f, LoggingTankInterface())
         tilter = Tilter(0f, LoggingTankInterface())
-
     }
 
 
@@ -101,6 +99,15 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
             }
             graphicOverlay.add(faceGraphic)
         }
+
+        // take first face and calculate and correct for its error
+        // this is a non-blocking call
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - previousErrorSendTime > 100) {
+            previousErrorSendTime = currentTime
+            calculateErrorAndSend()
+        }
+
         graphicOverlay.postInvalidate()
 
     }
@@ -111,6 +118,7 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
             panner.pan(inputFace!!.getPanError())
             tilter.tilt(inputFace!!.getTiltError())
             Log.i(TAG, "selectedFace != NULL")
+            faceMovementWatcher.onFaceMove(firstFace!!.getPanError(), firstFace!!.getTiltError())
         }
     }
 
@@ -121,5 +129,9 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
 
     companion object {
         private const val TAG = "FaceDetectionProcessor"
+    }
+
+    interface FaceMovementWatcher {
+        fun onFaceMove(panError: Float, tiltError: Float)
     }
 }
