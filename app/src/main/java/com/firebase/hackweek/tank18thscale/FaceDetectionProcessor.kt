@@ -86,8 +86,6 @@ class FaceDetectionProcessor(res: Resources, private val faceMovementWatcher: Fa
 
     fun calculateErrorAndSend(){
         if(firstFace != null) {
-//            val panAngle = panProcessor.update(firstFace!!.getPanError())
-//            val tiltAngle = tiltProcessor.update(firstFace!!.getTiltError())
             faceMovementWatcher.onFaceMove(firstFace!!.getPanError(), firstFace!!.getTiltError())
         }
     }

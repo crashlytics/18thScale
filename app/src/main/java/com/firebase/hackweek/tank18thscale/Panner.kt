@@ -10,6 +10,5 @@ class Panner(private val threshold: Float = 0f, private val ti : TankInterface) 
             ti.turnLeft()
             return
         }
-        ti.stop()
     }
 }

@@ -5,10 +5,6 @@ import android.util.Log
 private const val TAG = "Tank18thScale"
 
 class LoggingTankInterface : TankInterface {
-    override fun stop() {
-        log("Stop")
-    }
-
     override fun moveForward() {
         log("Move forward")
     }
