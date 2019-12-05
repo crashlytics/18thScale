@@ -3,9 +3,6 @@ package com.firebase.hackweek.tank18thscale
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Rect
-import android.media.FaceDetector
 import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.firebase.ml.vision.FirebaseVision
@@ -13,13 +10,9 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.face.FirebaseVisionFace
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetector
 import com.google.firebase.ml.vision.face.FirebaseVisionFaceDetectorOptions
-import com.firebase.hackweek.tank18thscale.R
 import com.firebase.hackweek.tank18thscale.common.CameraImageGraphic
 import com.firebase.hackweek.tank18thscale.common.FrameMetadata
 import com.firebase.hackweek.tank18thscale.common.GraphicOverlay
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.io.IOException
 
 
@@ -36,6 +29,7 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
     private val panner: Panner
     private val tilter: Tilter
     private var firstFace : FaceGraphic? = null
+    private var previousErrorSendTime = 0L
 
     init {
         val options = FirebaseVisionFaceDetectorOptions.Builder()
@@ -88,8 +82,9 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
         }
         // take first face and calculate and correct for its error
         // this is a non-blocking call
-        GlobalScope.launch {
-            delay(1000)
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - previousErrorSendTime > 1000) {
+            previousErrorSendTime = currentTime
             calculateErrorAndSend()
         }
 
@@ -98,10 +93,10 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
 
     fun calculateErrorAndSend(){
         if(firstFace != null) {
-            val panAngle = panProcessor.update(firstFace!!.getPanError())
-            val tiltAngle = tiltProcessor.update(firstFace!!.getTiltError())
-            panner.pan(panAngle)
-            tilter.tilt(tiltAngle)
+//            val panAngle = panProcessor.update(firstFace!!.getPanError())
+//            val tiltAngle = tiltProcessor.update(firstFace!!.getTiltError())
+            panner.pan(firstFace!!.getPanError())
+            tilter.tilt(firstFace!!.getTiltError())
         }
     }
 
