@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Rect
+import android.media.FaceDetector
 import android.util.Log
 import com.google.android.gms.tasks.Task
 import com.google.firebase.ml.vision.FirebaseVision
@@ -16,6 +17,9 @@ import com.firebase.hackweek.tank18thscale.R
 import com.firebase.hackweek.tank18thscale.common.CameraImageGraphic
 import com.firebase.hackweek.tank18thscale.common.FrameMetadata
 import com.firebase.hackweek.tank18thscale.common.GraphicOverlay
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.IOException
 
 
@@ -31,6 +35,7 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
     private val tiltProcessor: PID
     private val panner: Panner
     private val tilter: Tilter
+    private var firstFace : FaceGraphic? = null
 
     init {
         val options = FirebaseVisionFaceDetectorOptions.Builder()
@@ -49,19 +54,6 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
         tilter = Tilter(0f, LoggingTankInterface())
 
     }
-
-//    private class FaceInfo(overlay: GraphicOverlay, private val firebaseVisionFace: FirebaseVisionFace) : GraphicOverlay.Graphic(overlay) {
-//        fun getPanError() : Float {
-//            val faceCenterX = translateX(firebaseVisionFace.boundingBox.centerX().toFloat())
-//            return overlayCenterX - faceCenterX
-//        }
-//
-//        fun getTiltError() : Float {
-//            val faceCenterY = translateY(firebaseVisionFace.boundingBox.centerY().toFloat())
-//            return overlayCenterY - faceCenterY
-//        }
-//        override fun draw(canvas: Canvas){}
-//    }
 
 
     override fun stop() {
@@ -85,7 +77,6 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
         graphicOverlay.clear()
         val imageGraphic = CameraImageGraphic(graphicOverlay, originalCameraImage)
         graphicOverlay.add(imageGraphic)
-        var firstFace : FaceGraphic? = null
         for (i in results.indices) {
             val face = results[i]
             val cameraFacing = frameMetadata.cameraFacing
@@ -96,18 +87,22 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
             }
         }
         // take first face and calculate and correct for its error
-        if(firstFace != null) {
-            val panAngle = panProcessor.update(firstFace.getPanError())
-            val tiltAngle = tiltProcessor.update(firstFace.getTiltError())
-        //    println("tiltAngle")
-        //    println(tiltAngle)
-        //    println("panAngle")
-        //    println(panAngle)
-            panner.pan(panAngle)
-            tilter.tilt(tiltAngle)
+        // this is a non-blocking call
+        GlobalScope.launch {
+            delay(1000)
+            calculateErrorAndSend()
         }
 
         graphicOverlay.postInvalidate()
+    }
+
+    fun calculateErrorAndSend(){
+        if(firstFace != null) {
+            val panAngle = panProcessor.update(firstFace!!.getPanError())
+            val tiltAngle = tiltProcessor.update(firstFace!!.getTiltError())
+            panner.pan(panAngle)
+            tilter.tilt(tiltAngle)
+        }
     }
 
 
