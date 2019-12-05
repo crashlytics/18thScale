@@ -15,10 +15,8 @@ import com.firebase.hackweek.tank18thscale.common.FrameMetadata
 import com.firebase.hackweek.tank18thscale.common.GraphicOverlay
 import java.io.IOException
 
-
-
 /** Face Detector Demo.  */
-class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<FirebaseVisionFace>>() {
+class FaceDetectionProcessor(res: Resources, private val faceMovementWatcher: FaceMovementWatcher) : VisionProcessorBase<List<FirebaseVisionFace>>() {
 
     private val detector: FirebaseVisionFaceDetector
 
@@ -26,8 +24,6 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
     // @GuardedBy("processorLock")
     private val panProcessor: PID
     private val tiltProcessor: PID
-    private val panner: Panner
-    private val tilter: Tilter
     private var firstFace : FaceGraphic? = null
     private var previousErrorSendTime = 0L
 
@@ -44,9 +40,6 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
 
         panProcessor = PID(0.09f, 0.08f, 0.002f)
         tiltProcessor = PID(0.11f, 0.10f, 0.002f)
-        panner = Panner(0f, LoggingTankInterface())
-        tilter = Tilter(0f, LoggingTankInterface())
-
     }
 
 
@@ -83,7 +76,7 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
         // take first face and calculate and correct for its error
         // this is a non-blocking call
         val currentTime = System.currentTimeMillis()
-        if (currentTime - previousErrorSendTime > 1000) {
+        if (currentTime - previousErrorSendTime > 100) {
             previousErrorSendTime = currentTime
             calculateErrorAndSend()
         }
@@ -95,8 +88,7 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
         if(firstFace != null) {
 //            val panAngle = panProcessor.update(firstFace!!.getPanError())
 //            val tiltAngle = tiltProcessor.update(firstFace!!.getTiltError())
-            panner.pan(firstFace!!.getPanError())
-            tilter.tilt(firstFace!!.getTiltError())
+            faceMovementWatcher.onFaceMove(firstFace!!.getPanError(), firstFace!!.getTiltError())
         }
     }
 
@@ -107,5 +99,9 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
 
     companion object {
         private const val TAG = "FaceDetectionProcessor"
+    }
+
+    interface FaceMovementWatcher {
+        fun onFaceMove(panError: Float, tiltError: Float)
     }
 }
