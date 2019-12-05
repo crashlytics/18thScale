@@ -96,6 +96,22 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
         graphicOverlay.postInvalidate()
     }
 
+    fun closestFace(faces : List<FaceGraphic>): FaceGraphic {
+        if (faces.isEmpty()) {
+
+        }
+        var closest = 1000.0
+        var name : FaceGraphic = faces[0]
+        for (face in faces) {
+            val dis = face.getFaceDistanceFromCenter()
+            if(dis < closest) {
+                closest = dis
+                name = face
+            }
+        }
+        return name
+    }
+
     fun calculateErrorAndSend(){
         if(firstFace != null) {
             val panAngle = panProcessor.update(firstFace!!.getPanError())
