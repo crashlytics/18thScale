@@ -15,6 +15,7 @@ import com.firebase.hackweek.tank18thscale.common.CameraImageGraphic
 import com.firebase.hackweek.tank18thscale.common.FrameMetadata
 import com.firebase.hackweek.tank18thscale.common.GraphicOverlay
 import java.io.IOException
+private const val TAG = "Tank18thScale"
 
 
 
@@ -29,7 +30,6 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
     private val tiltProcessor: PID
     private val panner: Panner
     private val tilter: Tilter
-    private var selectedFace : FaceGraphic? = null
     private var previousErrorSendTime = 0L
 
     init {
@@ -43,8 +43,8 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
 
         overlayBitmap = BitmapFactory.decodeResource(res, R.drawable.clown_nose)
 
-        panProcessor = PID(0.09f, 0.08f, 0.002f)
-        tiltProcessor = PID(0.11f, 0.10f, 0.002f)
+        panProcessor = PID(0.09f, 0.08f, 0.002f ,"PAN: ")
+        tiltProcessor = PID(0.11f, 0.10f, 0.002f,  "TILT: ")
         panner = Panner(0f, LoggingTankInterface())
         tilter = Tilter(0f, LoggingTankInterface())
 
@@ -90,24 +90,27 @@ class FaceDetectionProcessor(res: Resources) : VisionProcessorBase<List<Firebase
             val cameraFacing = frameMetadata.cameraFacing
             val faceGraphic = FaceGraphic(
                 graphicOverlay, face, cameraFacing, null, if (face == selectedFace) Color.GREEN else Color.WHITE)
+            if (face == selectedFace) {
+                // take the selected face and calculate and correct for its error
+                // this is a non-blocking call
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - previousErrorSendTime > 1000) {
+                    previousErrorSendTime = currentTime
+                    calculateErrorAndSend(faceGraphic)
+                }
+            }
             graphicOverlay.add(faceGraphic)
         }
-
-        // take the selected face and calculate and correct for its error
-        // this is a non-blocking call
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - previousErrorSendTime > 1000) {
-            previousErrorSendTime = currentTime
-            calculateErrorAndSend()
-        }
-
         graphicOverlay.postInvalidate()
+
     }
 
-    fun calculateErrorAndSend(){
-        if(selectedFace != null) {
-            panner.pan(selectedFace!!.getPanError())
-            tilter.tilt(selectedFace!!.getTiltError())
+    fun calculateErrorAndSend(inputFace : FaceGraphic){
+        Log.i(TAG, "in calculateErrorAndSend")
+        if(inputFace != null) {
+            panner.pan(inputFace!!.getPanError())
+            tilter.tilt(inputFace!!.getTiltError())
+            Log.i(TAG, "selectedFace != NULL")
         }
     }
 
