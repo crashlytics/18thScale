@@ -45,6 +45,22 @@ class FaceGraphic(
         strokeWidth = BOX_STROKE_WIDTH
     }
 
+    fun getFaceDistanceFromCenter() : Double {
+        val face = firebaseVisionFace ?: return 0.0
+        val faceCenterX = translateX(face.boundingBox.centerX().toFloat()).toDouble()
+        val faceCenterY = translateY(face.boundingBox.centerY().toFloat()).toDouble()
+        return calculateDistanceBetweenPoints(faceCenterX, faceCenterY, overlayCenterX.toDouble(), overlayCenterY.toDouble())
+    }
+
+    private fun calculateDistanceBetweenPoints(
+            x1: Double,
+            y1: Double,
+            x2: Double,
+            y2: Double
+    ): Double {
+            return Math.sqrt((y2 - y1) * (y2 - y1) + (x2 - x1) * (x2 - x1))
+    }
+
     fun getPanError() : Float {
         if (firebaseVisionFace == null) {
             return 0f
