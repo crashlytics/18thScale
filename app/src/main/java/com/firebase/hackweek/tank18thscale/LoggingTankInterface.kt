@@ -41,6 +41,14 @@ class LoggingTankInterface : TankInterface {
         log("Blink lights")
     }
 
+    override fun turnRed() {
+        log("Turn red")
+    }
+
+    override fun turnGreen() {
+        log("Turn green")
+    }
+
     private fun log(msg : String) {
         Log.i(TAG, msg)
     }

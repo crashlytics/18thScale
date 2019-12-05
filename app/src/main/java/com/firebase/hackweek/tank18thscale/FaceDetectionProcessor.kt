@@ -84,10 +84,8 @@ class FaceDetectionProcessor(res: Resources, private val faceMovementWatcher: Fa
     }
 
     fun calculateErrorAndSend(inputFace : FaceGraphic){
-        Log.i(TAG, "in calculateErrorAndSend")
         if(inputFace != null) {
-            Log.i(TAG, "selectedFace != NULL")
-            faceMovementWatcher.onFaceMove(inputFace!!.getPanError(), inputFace!!.getTiltError())
+            faceMovementWatcher.onFaceMove(inputFace!!.getPanError(), inputFace!!.getTiltError(), inputFace!!.getHappiness())
         }
     }
 
@@ -100,6 +98,6 @@ class FaceDetectionProcessor(res: Resources, private val faceMovementWatcher: Fa
     }
 
     interface FaceMovementWatcher {
-        fun onFaceMove(panError: Float, tiltError: Float)
+        fun onFaceMove(panError: Float, tiltError: Float, smileProbability : Float)
     }
 }

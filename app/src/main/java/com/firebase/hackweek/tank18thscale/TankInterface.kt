@@ -13,4 +13,6 @@ interface TankInterface {
     fun turnOnLights()
     fun turnOffLights()
     fun blinkLights()
+    fun turnRed()
+    fun turnGreen()
 }

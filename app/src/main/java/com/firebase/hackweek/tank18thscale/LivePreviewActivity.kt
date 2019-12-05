@@ -43,6 +43,7 @@ class LivePreviewActivity : AppCompatActivity(), OnRequestPermissionsResultCallb
     private var selectedModel = FACE_DETECTION
     private lateinit var panner: Panner
     private lateinit var tilter: Tilter
+    private lateinit var blinker: Blinker
 
     private val requiredPermissions: Array<String?>
         get() {
@@ -115,12 +116,14 @@ class LivePreviewActivity : AppCompatActivity(), OnRequestPermissionsResultCallb
         val ti = (application as TankApp).tankInterface
         panner = Panner(150f, ti)
         tilter = Tilter(150f, ti)
+        blinker = Blinker(0.8f, ti)
 
         var faceMovementWatcher = object : FaceDetectionProcessor.FaceMovementWatcher {
-            override fun onFaceMove(panError: Float, tiltError: Float) {
+            override fun onFaceMove(panError: Float, tiltError: Float, happiness : Float) {
                 if (bluetoothConnected) {
                     panner.pan(panError)
                     tilter.tilt(tiltError)
+                    blinker.blink(happiness)
                 }
             }
         }
