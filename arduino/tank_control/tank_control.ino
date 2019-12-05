@@ -1,4 +1,7 @@
 #include <Servo.h>
+#include <FastLED.h>
+
+FASTLED_USING_NAMESPACE
 
 // Motors
 #define E1 6 // M1 Speed Control
@@ -15,17 +18,33 @@
 Servo servo;
 int currentServoAngle = 100;
 
+
+// Blinky Lights
+#define DATA_PIN    7
+#define LED_TYPE    WS2811
+#define COLOR_ORDER GRB
+#define NUM_LEDS    8
+#define BRIGHTNESS          96
+#define FRAMES_PER_SECOND  120
+CRGB leds[NUM_LEDS];
+uint8_t gHue = 0; // rotating "base color" used by blinky lights
+
 void setup(void)
 {
   for(int i=5;i<=8;i++) {
     pinMode(i, OUTPUT);
   }
-  
+
+  FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.setBrightness(BRIGHTNESS);
+
   servo.attach(SERVO_PIN);
   servo.write(currentServoAngle);
       
   Serial.begin(9600);
   Serial.println("setup");
+
+  blinkyLights(CRGB::Aqua);
 }
 
 void loop(void)
@@ -33,6 +52,11 @@ void loop(void)
   if (Serial.available() > 0) {
     handleSerial(Serial.read());
   }
+}
+
+void blinkyLights(CRGB color) {
+  fill_solid(leds, NUM_LEDS, color);
+  FastLED.show();
 }
 
 void stop(void)
@@ -71,8 +95,8 @@ void left (char a,char b)
 
 void left (char a,char b, int ms) {
   left(a,b);
-  delay(ms);
-  stop();  
+  FastLED.delay(ms);
+  stop();
 }
 
 void right (char a,char b)
@@ -136,6 +160,14 @@ void handleSerial(char command) {
     case 'k':
     case 'K':
       right(leftspeed, rightspeed, 100);
+      break;
+    case 'r':
+    case 'R':
+      blinkyLights(CRGB::Red);
+      break;
+    case 'g':
+    case 'G':
+      blinkyLights(CRGB::Green);
       break;
     default:
       stop();
