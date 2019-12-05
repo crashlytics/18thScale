@@ -19,16 +19,8 @@ private const val TAG = "Tank18thScale"
 
 /** Face Detector Demo.  */
 class FaceDetectionProcessor(res: Resources, private val faceMovementWatcher: FaceMovementWatcher) : VisionProcessorBase<List<FirebaseVisionFace>>() {
-
     private val detector: FirebaseVisionFaceDetector
-
     private val overlayBitmap: Bitmap
-    // @GuardedBy("processorLock")
-    private val panProcessor: PID
-    private val tiltProcessor: PID
-    private val panner: Panner
-    private val tilter: Tilter
-
     private var previousErrorSendTime = 0L
 
     init {
@@ -39,13 +31,7 @@ class FaceDetectionProcessor(res: Resources, private val faceMovementWatcher: Fa
             .build()
 
         detector = FirebaseVision.getInstance().getVisionFaceDetector(options)
-
         overlayBitmap = BitmapFactory.decodeResource(res, R.drawable.clown_nose)
-
-        panProcessor = PID(0.09f, 0.08f, 0.002f ,"PAN: ")
-        tiltProcessor = PID(0.11f, 0.10f, 0.002f,  "TILT: ")
-        panner = Panner(0f, LoggingTankInterface())
-        tilter = Tilter(0f, LoggingTankInterface())
     }
 
 
@@ -68,8 +54,13 @@ class FaceDetectionProcessor(res: Resources, private val faceMovementWatcher: Fa
         graphicOverlay: GraphicOverlay
     ) {
         val selectedFace = faces.maxBy { it.smilingProbability }
-
         drawImage(selectedFace, faces, graphicOverlay, frameMetadata, originalCameraImage);
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - previousErrorSendTime > 100) {
+            previousErrorSendTime = currentTime
+            calculateErrorAndSend(
+                FaceGraphic(graphicOverlay, selectedFace, frameMetadata.cameraFacing, null, Color.WHITE))
+        }
     }
 
     private fun drawImage(
@@ -88,40 +79,17 @@ class FaceDetectionProcessor(res: Resources, private val faceMovementWatcher: Fa
             val cameraFacing = frameMetadata.cameraFacing
             val faceGraphic = FaceGraphic(
                 graphicOverlay, face, cameraFacing, null, if (face == selectedFace) Color.GREEN else Color.WHITE)
-            if (face == selectedFace) {
-                // take the selected face and calculate and correct for its error
-                // this is a non-blocking call
-                val currentTime = System.currentTimeMillis()
-                if (currentTime - previousErrorSendTime > 1000) {
-                    previousErrorSendTime = currentTime
-                    calculateErrorAndSend(faceGraphic)
-                }
-            }
             graphicOverlay.add(faceGraphic)
         }
-
-        // take first face and calculate and correct for its error
-        // this is a non-blocking call
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - previousErrorSendTime > 100) {
-            previousErrorSendTime = currentTime
-            calculateErrorAndSend()
-        }
-
-        graphicOverlay.postInvalidate()
-
     }
 
     fun calculateErrorAndSend(inputFace : FaceGraphic){
         Log.i(TAG, "in calculateErrorAndSend")
         if(inputFace != null) {
-            panner.pan(inputFace!!.getPanError())
-            tilter.tilt(inputFace!!.getTiltError())
             Log.i(TAG, "selectedFace != NULL")
-            faceMovementWatcher.onFaceMove(firstFace!!.getPanError(), firstFace!!.getTiltError())
+            faceMovementWatcher.onFaceMove(inputFace!!.getPanError(), inputFace!!.getTiltError())
         }
     }
-
 
     override fun onFailure(e: Exception) {
         Log.e(TAG, "Face detection failed $e")
