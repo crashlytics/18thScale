@@ -18,13 +18,13 @@ package com.firebase.hackweek.tank18thscale
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AppCompatActivity
 import android.util.Log
 
-import android.widget.CompoundButton
 import com.google.android.gms.common.annotation.KeepName
 import com.google.firebase.ml.common.FirebaseMLException
 import com.firebase.hackweek.tank18thscale.common.CameraSource
@@ -32,7 +32,6 @@ import com.firebase.hackweek.tank18thscale.common.CameraSource
 import kotlinx.android.synthetic.main.activity_live_preview.fireFaceOverlay
 import kotlinx.android.synthetic.main.activity_live_preview.firePreview
 import java.io.IOException
-import com.google.firebase.ml.vision.objects.FirebaseVisionObjectDetectorOptions
 
 
 /** Demo app showing the various features of ML Kit for Firebase. This class is used to
@@ -42,6 +41,8 @@ class LivePreviewActivity : AppCompatActivity(), OnRequestPermissionsResultCallb
 
     private var cameraSource: CameraSource? = null
     private var selectedModel = FACE_DETECTION
+    private lateinit var panner: Panner
+    private lateinit var tilter: Tilter
 
     private val requiredPermissions: Array<String?>
         get() {
@@ -103,11 +104,25 @@ class LivePreviewActivity : AppCompatActivity(), OnRequestPermissionsResultCallb
 //        startCameraSource()
 //    }
 
+    private var bluetoothConnected = false
 
     private fun createCameraSource(model: String) {
         // If there's no existing cameraSource, create one.
         if (cameraSource == null) {
             cameraSource = CameraSource(this, fireFaceOverlay)
+        }
+
+        val ti = (application as TankApp).tankInterface
+        panner = Panner(150f, ti)
+        tilter = Tilter(150f, ti)
+
+        var faceMovementWatcher = object : FaceDetectionProcessor.FaceMovementWatcher {
+            override fun onFaceMove(panError: Float, tiltError: Float) {
+                if (bluetoothConnected) {
+                    panner.pan(panError)
+                    tilter.tilt(tiltError)
+                }
+            }
         }
 
         cameraSource?.setFacing(CameraSource.CAMERA_FACING_FRONT)
@@ -116,7 +131,7 @@ class LivePreviewActivity : AppCompatActivity(), OnRequestPermissionsResultCallb
             when (model) {
                 FACE_DETECTION -> {
                     Log.i(TAG, "Using Face Detector Processor")
-                    cameraSource?.setMachineLearningFrameProcessor(FaceDetectionProcessor(resources))
+                    cameraSource?.setMachineLearningFrameProcessor(FaceDetectionProcessor(resources, faceMovementWatcher))
                 }
 
                 else -> Log.e(TAG, "Unknown model: $model")
@@ -153,6 +168,8 @@ class LivePreviewActivity : AppCompatActivity(), OnRequestPermissionsResultCallb
         super.onResume()
         Log.d(TAG, "onResume")
         startCameraSource()
+        // TODO Should do this on a callback when it's *actually* connected
+        Handler().postDelayed({ bluetoothConnected = true }, 5000)
     }
 
     /** Stops the camera.  */

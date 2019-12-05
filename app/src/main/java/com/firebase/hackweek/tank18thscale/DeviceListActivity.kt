@@ -89,8 +89,9 @@ class DeviceListActivity : AppCompatActivity(), DeviceListAdapter.DeviceClickLis
         // TODO: do a loading spinner, connect the service, hand the tankinterface to the application
         val service = BluetoothService(bluetoothAdapter!!)
         service.connect(bluetoothAdapter!!.getRemoteDevice(deviceInfo.address))
-        val tankInterface = BluetoothTankInterface(service)
-        // Give the tankInterface to the application to manage as a singleton
+        (application as TankApp).tankInterface = BluetoothTankInterface(service)
+        val livePreview = Intent(this, LivePreviewActivity::class.java)
+        startActivity(livePreview)
     }
 
     private fun requestBluetoothPermission() {
@@ -98,6 +99,7 @@ class DeviceListActivity : AppCompatActivity(), DeviceListAdapter.DeviceClickLis
         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
     }
 
+    // TODO: We should probably cancel discovery onPause and resume it onResume
     private fun findBluetoothDevices() {
         val pairedDevices: Set<BluetoothDevice>? = bluetoothAdapter?.bondedDevices
         pairedDevices?.forEach { device ->
