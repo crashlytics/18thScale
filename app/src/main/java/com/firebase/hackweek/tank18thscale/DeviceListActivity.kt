@@ -91,10 +91,15 @@ class DeviceListActivity : AppCompatActivity(), DeviceListAdapter.DeviceClickLis
         (application as TankApp).tankInterface = BluetoothTankInterface(bluetoothService!!)
     }
 
+    private var navigate = true
+
     override fun onConnected() {
         hasShownConnectionFailure = false
-        val livePreview = Intent(this, LivePreviewActivity::class.java)
-        startActivity(livePreview)
+        if (navigate) {
+            navigate = false
+            val livePreview = Intent(this, LivePreviewActivity::class.java)
+            startActivity(livePreview)
+        }
     }
 
     private var hasShownConnectionFailure = false
