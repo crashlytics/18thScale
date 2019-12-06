@@ -57,7 +57,7 @@ class FaceGraphic(
     }
 
     fun getHappiness() : Float {
-        if (firebaseVisionFace != null) return firebaseVisionFace.smilingProbability else return 0f
+        return firebaseVisionFace?.smilingProbability ?: 0f
     }
 
     override fun draw(canvas: Canvas) {
