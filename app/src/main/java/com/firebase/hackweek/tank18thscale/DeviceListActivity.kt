@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
 import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -20,7 +19,7 @@ import com.firebase.hackweek.tank18thscale.service.BluetoothService
 
 private const val REQUEST_ENABLE_BT = 1
 
-class DeviceListActivity : AppCompatActivity(), DeviceListAdapter.DeviceClickListener {
+class DeviceListActivity : AppCompatActivity(), DeviceListAdapter.DeviceClickListener, BluetoothService.OnConnectedListener {
 
     private val bluetoothDeviceList = BluetoothDeviceList()
 
@@ -86,12 +85,21 @@ class DeviceListActivity : AppCompatActivity(), DeviceListAdapter.DeviceClickLis
     }
 
     override fun onItemClick(deviceInfo: DeviceInfo) {
-        // TODO: do a loading spinner, connect the service, hand the tankinterface to the application
         val service = BluetoothService(bluetoothAdapter!!)
-        service.connect(bluetoothAdapter!!.getRemoteDevice(deviceInfo.address))
+        service.connect(bluetoothAdapter!!.getRemoteDevice(deviceInfo.address), this)
         (application as TankApp).tankInterface = BluetoothTankInterface(service)
+    }
+
+    override fun onConnected() {
         val livePreview = Intent(this, LivePreviewActivity::class.java)
         startActivity(livePreview)
+    }
+
+    override fun onConnectionFailure() {
+        runOnUiThread {
+            Toast.makeText(this, "Could not establish Bluetooth connection", Toast.LENGTH_SHORT)
+                .show()
+        }
     }
 
     private fun requestBluetoothPermission() {
