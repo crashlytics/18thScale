@@ -24,6 +24,7 @@ class DeviceListActivity : AppCompatActivity(), DeviceListAdapter.DeviceClickLis
     private val bluetoothDeviceList = BluetoothDeviceList()
 
     private var bluetoothAdapter : BluetoothAdapter? = null
+    private var bluetoothService : BluetoothService? = null
 
     private lateinit var viewModel: DevicesViewModel
     private lateinit var discoveryReceiver: BluetoothDiscoveryReceiver
@@ -85,20 +86,26 @@ class DeviceListActivity : AppCompatActivity(), DeviceListAdapter.DeviceClickLis
     }
 
     override fun onItemClick(deviceInfo: DeviceInfo) {
-        val service = BluetoothService(bluetoothAdapter!!)
-        service.connect(bluetoothAdapter!!.getRemoteDevice(deviceInfo.address), this)
-        (application as TankApp).tankInterface = BluetoothTankInterface(service)
+        bluetoothService = BluetoothService(bluetoothAdapter!!)
+        bluetoothService!!.connect(bluetoothAdapter!!.getRemoteDevice(deviceInfo.address), this)
+        (application as TankApp).tankInterface = BluetoothTankInterface(bluetoothService!!)
     }
 
     override fun onConnected() {
+        hasShownConnectionFailure = false
         val livePreview = Intent(this, LivePreviewActivity::class.java)
         startActivity(livePreview)
     }
 
+    private var hasShownConnectionFailure = false
+
     override fun onConnectionFailure() {
-        runOnUiThread {
-            Toast.makeText(this, "Could not establish Bluetooth connection", Toast.LENGTH_SHORT)
-                .show()
+        if (!hasShownConnectionFailure) {
+            runOnUiThread {
+                Toast.makeText(this, "Could not establish Bluetooth connection", Toast.LENGTH_SHORT)
+                    .show()
+                hasShownConnectionFailure = true
+            }
         }
     }
 
